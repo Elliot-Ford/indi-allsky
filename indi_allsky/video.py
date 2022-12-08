@@ -98,10 +98,9 @@ class VideoWorker(Process):
         #raise Exception('Test exception handling in worker')
 
         while True:
-            time.sleep(1.9)  # sleep every loop
 
             try:
-                v_dict = self.video_q.get_nowait()
+                v_dict = self.video_q.get(block=True)
             except queue.Empty:
                 continue
 
