@@ -55,8 +55,8 @@ class IndiClientLibCameraGeneric(IndiClient):
         self.telescope_driver_exec = 'indi_fake_telescope'
 
         self.telescope_info = {
-            'lat'           : self.latitude_v.value,
-            'long'          : self.longitude_v.value,
+            'lat'           : self.latitude_v,
+            'long'          : self.longitude_v,
         }
 
 
@@ -64,8 +64,8 @@ class IndiClientLibCameraGeneric(IndiClient):
         self.gps_driver_exec = 'indi_fake_gps'
 
         self.gps_info = {
-            'lat'           : self.latitude_v.value,
-            'long'          : self.longitude_v.value,
+            'lat'           : self.latitude_v,
+            'long'          : self.longitude_v,
         }
 
 
@@ -77,8 +77,7 @@ class IndiClientLibCameraGeneric(IndiClient):
         self._ccd_gain = int(new_gain_value)
 
         # Update shared gain value
-        with self.gain_v.get_lock():
-            self.gain_v.value = int(new_gain_value)
+        self.gain_v = int(new_gain_value)
 
 
     def setCcdBinning(self, new_bin_value):
@@ -94,8 +93,7 @@ class IndiClientLibCameraGeneric(IndiClient):
         self._ccd_bin = int(new_bin_value[0])
 
         # Update shared gain value
-        with self.bin_v.get_lock():
-            self.bin_v.value = int(new_bin_value[0])
+        self.bin_v = int(new_bin_value[0])
 
 
     def setCcdExposure(self, exposure, sync=False, timeout=None):

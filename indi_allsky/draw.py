@@ -7,9 +7,9 @@ logger = logging.getLogger('indi_allsky')
 
 
 class IndiAllSkyDraw(object):
-    def __init__(self, config, bin_v, mask=None):
+    def __init__(self, config, binning, mask=None):
         self.config = config
-        self.bin_v = bin_v
+        self.binning = binning
 
         self._sqm_mask = mask
 
@@ -27,10 +27,10 @@ class IndiAllSkyDraw(object):
             adu_roi = self.config.get('ADU_ROI', [])
 
             try:
-                adu_x1 = int(adu_roi[0] / self.bin_v.value)
-                adu_y1 = int(adu_roi[1] / self.bin_v.value)
-                adu_x2 = int(adu_roi[2] / self.bin_v.value)
-                adu_y2 = int(adu_roi[3] / self.bin_v.value)
+                adu_x1 = int(adu_roi[0] / self.binning)
+                adu_y1 = int(adu_roi[1] / self.binning)
+                adu_x2 = int(adu_roi[2] / self.binning)
+                adu_y2 = int(adu_roi[3] / self.binning)
             except IndexError:
                 adu_x1 = int((image_width / 2) - (image_width / 3))
                 adu_y1 = int((image_height / 2) - (image_height / 3))

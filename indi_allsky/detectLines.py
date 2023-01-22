@@ -24,9 +24,9 @@ class IndiAllskyDetectLines(object):
     mask_blur_kernel_size = 75
 
 
-    def __init__(self, config, bin_v, mask=None):
+    def __init__(self, config, binning, mask=None):
         self.config = config
-        self.bin_v = bin_v
+        self.binning = binning
 
         self._sqm_mask = mask
         self._sqm_gradient_mask = None
@@ -100,10 +100,10 @@ class IndiAllskyDetectLines(object):
         sqm_roi = self.config.get('SQM_ROI', [])
 
         try:
-            x1 = int(sqm_roi[0] / self.bin_v.value)
-            y1 = int(sqm_roi[1] / self.bin_v.value)
-            x2 = int(sqm_roi[2] / self.bin_v.value)
-            y2 = int(sqm_roi[3] / self.bin_v.value)
+            x1 = int(sqm_roi[0] / self.binning)
+            y1 = int(sqm_roi[1] / self.binning)
+            x2 = int(sqm_roi[2] / self.binning)
+            y2 = int(sqm_roi[3] / self.binning)
         except IndexError:
             logger.warning('Using central ROI for blob calculations')
             x1 = int((image_width / 2) - (image_width / 3))

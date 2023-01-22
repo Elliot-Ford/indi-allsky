@@ -1,4 +1,6 @@
 import logging
+from typing import Union
+from multiprocessing import Value, Queue
 
 logger = logging.getLogger('indi_allsky')
 
@@ -8,13 +10,13 @@ class FakeIndiClient(object):
     def __init__(
         self,
         config,
-        image_q,
-        latitude_v,
-        longitude_v,
-        ra_v,
-        dec_v,
-        gain_v,
-        bin_v,
+        image_q: Queue,
+        latitude_v: Union[float, Value],
+        longitude_v: Union[float, Value],
+        ra_v: Union[float, Value],
+        dec_v: Union[float, Value],
+        gain_v: Union[int, Value],
+        bin_v: Union[int, Value],
     ):
         super(FakeIndiClient, self).__init__()
 
@@ -37,28 +39,28 @@ class FakeIndiClient(object):
         self._ccd_frame_type = 'LIGHT'
 
         self.camera_info = {
-            'width'         : None,
-            'height'        : None,
-            'pixel'         : None,
-            'min_gain'      : 0,
-            'max_gain'      : 100,
-            'min_exposure'  : 0.0000032,
-            'max_exposure'  : 300.0,
-            'cfa'           : None,
-            'bit_depth'     : 12,
+            'width': None,
+            'height': None,
+            'pixel': None,
+            'min_gain': 0,
+            'max_gain': 100,
+            'min_exposure': 0.0000032,
+            'max_exposure': 300.0,
+            'cfa': None,
+            'bit_depth': 12,
         }
 
 
         self._telescope_device = None
         self.telescope_info = {
-            'lat'           : 0.0,
-            'long'          : 0.0,
+            'lat': 0.0,
+            'long': 0.0,
         }
 
         self._gps_device = None
         self.gps_info = {
-            'lat'           : 0.0,
-            'long'          : 0.0,
+            'lat': 0.0,
+            'long': 0.0,
         }
 
 
@@ -125,40 +127,40 @@ class FakeIndiClient(object):
         self._filename_t = new_filename_t
 
 
-    def setServer(self, *args, **kwargs):
+    def setServer(self, *args, **kwargs) -> None:
         # does nothing
         pass
 
 
-    def connectServer(self):
+    def connectServer(self) -> None:
         # does nothing
         return True
 
 
-    def disconnectServer(self):
+    def disconnectServer(self) -> None:
         # does nothing
         pass
 
 
-    def connectDevice(self, *args, **kwargs):
+    def connectDevice(self, *args, **kwargs) -> None:
         # does nothing
         pass
 
 
-    def getHost(self):
+    def getHost(self) -> str:
         return self.__class__.__name__
 
 
-    def getPort(self):
+    def getPort(self) -> int:
         return 0
 
 
-    def updateCcdBlobMode(self, *args, **kwargs):
+    def updateCcdBlobMode(self, *args, **kwargs) -> None:
         # does nothing
         pass
 
 
-    def disableDebug(self, *args, **kwargs):
+    def disableDebug(self, *args, **kwargs) -> None:
         # does nothing
         pass
 
@@ -167,30 +169,30 @@ class FakeIndiClient(object):
         self.disableDebug(self._ccd_device)
 
 
-    def saveCcdConfig(self):
+    def saveCcdConfig(self) -> None:
         # does nothing
         pass
 
 
-    def resetCcdFrame(self, *args, **kwargs):
+    def resetCcdFrame(self, *args, **kwargs) -> None:
         # does nothing
         pass
 
 
-    def setCcdFrameType(self, frame_type):
+    def setCcdFrameType(self, frame_type: str) -> None:
         self._ccd_frame_type = frame_type
 
 
-    def getDeviceProperties(self, device):
+    def getDeviceProperties(self, device: any) -> dict:
         properties = dict()
         return properties
 
 
-    def getCcdDeviceProperties(self):
+    def getCcdDeviceProperties(self) -> dict:
         return self.getDeviceProperties(self._ccd_device)
 
 
-    def getCcdInfo(self):
+    def getCcdInfo(self) -> dict:
         ccdinfo = dict()
 
         ccdinfo['CCD_EXPOSURE'] = dict()
@@ -246,113 +248,113 @@ class FakeIndiClient(object):
         return ccdinfo
 
 
-    def findCcd(self, *args, **kwargs):
+    def findCcd(self, *args, **kwargs) -> None:
         # override
         # create FakeIndiCcd object here
         pass
 
 
-    def findTelescope(self, *args, **kwargs):
+    def findTelescope(self, *args, **kwargs) -> None:
         # override
         # create FakeIndiTelescope object here
         pass
 
 
-    def findGps(self, *args, **kwargs):
+    def findGps(self, *args, **kwargs) -> None:
         # override
         # create FakeIndiTelescope object here
         pass
 
 
-    def configureCcdDevice(self, *args, **kwargs):
+    def configureCcdDevice(self, *args, **kwargs) -> None:
         # does nothing
         pass
 
 
-    def configureTelescopeDevice(self, *args, **kwargs):
+    def configureTelescopeDevice(self, *args, **kwargs) -> None:
         # does nothing
         pass
 
 
-    def setTelescopeGps(self, *args, **kwargs):
+    def setTelescopeGps(self, *args, **kwargs) -> None:
         # does nothing
         pass
 
 
-    def configureGpsDevice(self, *args, **kwargs):
+    def configureGpsDevice(self, *args, **kwargs) -> None:
         # does nothing
         pass
 
 
-    def refreshGps(self):
+    def refreshGps(self) -> None:
         # does nothing
         pass
 
 
-    def getGpsPosition(self):
+    def getGpsPosition(self) -> (Value, Value, float):
         return self.latitude_v.value, self.longitude_v.value, 0.0
 
 
-    def getGpsTime(self):
+    def getGpsTime(self) -> (None, None):
         return None, None
 
 
-    def getTelescopeRaDec(self):
+    def getTelescopeRaDec(self) -> (float, float):
         return 0.0, 0.0
 
 
-    def parkTelescope(self):
+    def parkTelescope(self) -> None:
         # does nothing
         pass
 
 
-    def unparkTelescope(self):
+    def unparkTelescope(self) -> None:
         # does nothing
         pass
 
 
-    def setTelescopeParkPosition(self, *args, **kwargs):
+    def setTelescopeParkPosition(self, *args, **kwargs) -> None:
         # does nothing
         pass
 
 
-    def getCcdTemperature(self):
+    def getCcdTemperature(self) -> float:
         temp_val = -273.15  # absolute zero  :-)
         return temp_val
 
 
-    def enableCcdCooler(self):
+    def enableCcdCooler(self) -> bool:
         # does nothing
         return True
 
 
-    def disableCcdCooler(self):
+    def disableCcdCooler(self) -> bool:
         # does nothing
         return True
 
 
-    def setCcdTemperature(self, *args):
+    def setCcdTemperature(self, *args) -> bool:
         # does nothing
         return True
 
 
-    def setCcdExposure(self, exposure, sync=False, timeout=None):
+    def setCcdExposure(self, exposure: float, sync: bool = False, timeout: Union[float, None] = None):
         # override
         pass
 
 
-    def getCcdExposureStatus(self):
+    def getCcdExposureStatus(self) -> None:
         # override
         # returns camera_ready, exposure_state
         pass
 
 
 
-    def getCcdGain(self):
+    def getCcdGain(self) -> int:
         return self._ccd_gain
 
 
-    def setCcdGain(self, new_gain_value):
+    def setCcdGain(self, new_gain_value: Union[int, bytes, str]) -> None:
         self._ccd_gain = int(new_gain_value)
 
         # Update shared gain value
@@ -360,7 +362,7 @@ class FakeIndiClient(object):
             self.gain_v.value = int(new_gain_value)
 
 
-    def setCcdBinning(self, new_bin_value):
+    def setCcdBinning(self, new_bin_value: Union[int, str, bool]) -> None:
         if type(new_bin_value) is int:
             new_bin_value = [new_bin_value, new_bin_value]
         elif type(new_bin_value) is str:
@@ -389,32 +391,32 @@ class FakeIndiDevice(object):
 
 
     @property
-    def device_name(self):
+    def device_name(self) -> str:
         return self._device_name
 
     @device_name.setter
-    def device_name(self, new_device_name):
+    def device_name(self, new_device_name: str) -> None:
         self._device_name = new_device_name
 
 
     @property
-    def driver_exec(self):
+    def driver_exec(self) -> str:
         return self._driver_exec
 
     @driver_exec.setter
-    def driver_exec(self, new_driver_exec):
+    def driver_exec(self, new_driver_exec: str) -> None:
         self._driver_exec = new_driver_exec
 
 
-    def getDeviceName(self):
+    def getDeviceName(self) -> str:
         return self._device_name
 
 
-    def getDriverExec(self):
+    def getDriverExec(self) -> str:
         return self._driver_exec
 
 
-    def getSwitch(self, name):
+    def getSwitch(self, name: str):
         if name == 'DEBUG':
             vector = FakeIndiVectorSwitch('ENABLE', 'DISABLE')
         else:
@@ -423,7 +425,7 @@ class FakeIndiDevice(object):
         return vector
 
 
-    def getNumber(self, name):
+    def getNumber(self, name: str):
         if name == 'CCD_TEMPERATURE':
             vector = FakeIndiVectorNumber('CCD_TEMPERATURE_VALUE')
             vector[0].setValue(-273.15)
@@ -453,100 +455,100 @@ class FakeIndiCcd(FakeIndiDevice):
 
 
     @property
-    def width(self):
+    def width(self) -> Union[int, None]:
         return self._width
 
     @width.setter
-    def width(self, new_width):
+    def width(self, new_width: Union[int, str, bytes]) -> None:
         self._width = int(new_width)
 
     @property
-    def height(self):
+    def height(self) -> Union[int, None]:
         return self._height
 
     @height.setter
-    def height(self, new_height):
+    def height(self, new_height: Union[int, str, bytes]) -> None:
         self._height = int(new_height)
 
 
     @property
-    def pixel(self):
+    def pixel(self) -> Union[float, None]:
         return self._pixel
 
     @pixel.setter
-    def pixel(self, new_pixel):
+    def pixel(self, new_pixel: Union[float, str, bytes]) -> None:
         self._pixel = float(new_pixel)
 
 
     @property
-    def min_gain(self):
+    def min_gain(self) -> Union[float, None]:
         return self._min_gain
 
     @min_gain.setter
-    def min_gain(self, new_min_gain):
+    def min_gain(self, new_min_gain: Union[float, str, bytes]) -> None:
         self._min_gain = float(new_min_gain)
 
 
     @property
-    def max_gain(self):
+    def max_gain(self) -> Union[float, None]:
         return self._max_gain
 
     @max_gain.setter
-    def max_gain(self, new_max_gain):
+    def max_gain(self, new_max_gain: Union[float, str, bytes]) -> None:
         self._max_gain = float(new_max_gain)
 
 
     @property
-    def min_exposure(self):
+    def min_exposure(self) -> Union[float, None]:
         return self._min_exposure
 
     @min_exposure.setter
-    def min_exposure(self, new_min_exposure):
+    def min_exposure(self, new_min_exposure: Union[float, str, bytes]) -> None:
         self._min_exposure = float(new_min_exposure)
 
 
     @property
-    def max_exposure(self):
+    def max_exposure(self) -> Union[float, None]:
         return self._max_exposure
 
     @max_exposure.setter
-    def max_exposure(self, new_max_exposure):
+    def max_exposure(self, new_max_exposure: Union[float, str, bytes]) -> None:
         self._max_exposure = float(new_max_exposure)
 
 
     @property
-    def min_gain(self):
+    def min_gain(self) -> Union[float, None]:
         return self._min_gain
 
     @min_gain.setter
-    def min_gain(self, new_min_gain):
+    def min_gain(self, new_min_gain: Union[float, str, bytes]) -> None:
         self._min_gain = float(new_min_gain)
 
 
     @property
-    def max_gain(self):
+    def max_gain(self) -> Union[float, None]:
         return self._max_gain
 
     @max_gain.setter
-    def max_gain(self, new_max_gain):
+    def max_gain(self, new_max_gain: Union[float, str, bytes]) -> None:
         self._max_gain = float(new_max_gain)
 
 
     @property
-    def cfa(self):
+    def cfa(self) -> Union[str, None]:
         return self._cfa
 
     @cfa.setter
-    def cfa(self, new_cfa):
+    def cfa(self, new_cfa: str) -> None:
         self._cfa = new_cfa
 
 
     @property
-    def bit_depth(self):
+    def bit_depth(self) -> Union[int, None]:
         return self._bit_depth
 
     @bit_depth.setter
-    def bit_depth(self, new_bit_depth):
+    def bit_depth(self, new_bit_depth: Union[int, str, bytes]) -> None:
         self._bit_depth = int(new_bit_depth)
 
 
@@ -560,20 +562,20 @@ class FakeIndiTelescope(FakeIndiDevice):
 
 
     @property
-    def lat(self):
+    def lat(self) -> float:
         return self._lat
 
     @lat.setter
-    def lat(self, new_lat):
+    def lat(self, new_lat: Union[float, str, bytes]) -> None:
         self._lat = float(new_lat)
 
 
     @property
-    def long(self):
+    def long(self) -> float:
         return self._long
 
     @long.setter
-    def long(self, new_long):
+    def long(self, new_long: Union[float, str, bytes]) -> None:
         self._long = float(new_long)
 
 
@@ -587,20 +589,20 @@ class FakeIndiGps(FakeIndiDevice):
 
 
     @property
-    def lat(self):
+    def lat(self) -> float:
         return self._lat
 
     @lat.setter
-    def lat(self, new_lat):
+    def lat(self, new_lat: Union[float, str, bytes]) -> None:
         self._lat = float(new_lat)
 
 
     @property
-    def long(self):
+    def long(self) -> float:
         return self._long
 
     @long.setter
-    def long(self, new_long):
+    def long(self, new_long: Union[float, str, bytes]) -> None:
         self._long = float(new_long)
 
 
@@ -627,17 +629,17 @@ class FakeIndiVectorGeneric(object):
             raise StopIteration
 
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.options)
 
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int):
         return self.options[index]
 
 
 
 class FakeIndiVectorSwitch(FakeIndiVectorGeneric):
-    def getRule(self, *args, **kwargs):
+    def getRule(self, *args, **kwargs) -> int:
         #return 1  # PyIndi.ISR_ATMOST1
         #return 0  # PyIndi.ISR_1OFMANY
         return 999  # bogus
@@ -650,7 +652,7 @@ class FakeIndiVectorNumber(FakeIndiVectorGeneric):
 class FakeIndiVectorOption(object):
     # combining switch, number, and text
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         self._name = name
         self._state = 0
         self._value = 0
@@ -658,74 +660,49 @@ class FakeIndiVectorOption(object):
 
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self._name
 
     @name.setter
-    def name(self, new_name):
+    def name(self, new_name: str) -> None:
         self._name = new_name
-
-
-    def getName(self):
-        return self.name
 
 
     ### switch
 
 
     @property
-    def state(self):
+    def state(self) -> int:
         return self._state
 
     @state.setter
-    def state(self, new_state):
+    def state(self, new_state: Union[int, str, bytes]) -> None:
         self._state = int(new_state)
 
 
-    def getState(self):
+    def getState(self) -> int:
         return self._state
-
-
-    def setState(self, new_state):
-        self.state = new_state
 
 
     ### number
 
 
     @property
-    def value(self):
+    def value(self) -> float:
         return self._value
 
     @value.setter
-    def value(self, new_value):
+    def value(self, new_value: Union[float, str, bytes]) -> None:
         self._value = float(new_value)
-
-
-    def getValue(self):
-        return self.value
-
-
-    def setValue(self, new_value):
-        self.value = new_value
 
 
     ### text
 
 
     @property
-    def text(self):
+    def text(self) -> str:
         return self._text
 
     @text.setter
-    def text(self, new_text):
+    def text(self, new_text: any) -> None:
         self._text = str(new_text)
-
-
-    def getText(self):
-        return self.text
-
-
-    def setText(self, new_text):
-        self.text = new_text
-

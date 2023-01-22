@@ -67,16 +67,16 @@ class IndiAllSkyDarks(object):
 
         self.camera_id = None
 
-        self.exposure_v = Value('f', -1.0)
-        self.gain_v = Value('i', -1)  # value set in CCD config
-        self.bin_v = Value('i', 1)  # set 1 for sane default
-        self.sensortemp_v = Value('f', 0)
+        self._exposure_v = Value('f', -1.0)
+        self._gain_v = Value('i', -1)  # value set in CCD config
+        self._bin_v = Value('i', 1)  # set 1 for sane default
+        self._sensortemp_v = Value('f', 0)
 
         # not used, but required
-        self.latitude_v = Value('f', float(self.config['LOCATION_LATITUDE']))
-        self.longitude_v = Value('f', float(self.config['LOCATION_LONGITUDE']))
-        self.ra_v = Value('f', 0.0)
-        self.dec_v = Value('f', 0.0)
+        self._latitude_v = Value('f', float(self.config['LOCATION_LATITUDE']))
+        self._longitude_v = Value('f', float(self.config['LOCATION_LONGITUDE']))
+        self._ra_v = Value('f', 0.0)
+        self._dec_v = Value('f', 0.0)
 
         self._miscDb = miscDb(self.config)
 
@@ -88,6 +88,85 @@ class IndiAllSkyDarks(object):
 
         self.darks_dir = self.image_dir.joinpath('darks')
 
+    @property
+    def exposure_v(self) -> float:
+        with self._exposure_v.get_lock():
+            return self._exposure_v.value
+
+    @exposure_v.setter
+    def exposure_v(self, exposure_v: float) -> None:
+        with self._exposure_v.get_lock():
+            self._exposure_v.value = exposure_v
+
+    @property
+    def gain_v(self) -> int:
+        with self._gain_v.get_lock():
+            return self._gain_v.value
+
+    @gain_v.setter
+    def gain_v(self, gain_v: int) -> None:
+        with self._gain_v.get_lock():
+            gain_v.value = gain_v
+
+    @property
+    def bin_v(self) -> int:
+        with self._bin_v.get_lock():
+            return self._bin_v.value
+
+    @bin_v.setter
+    def bin_v(self, bin_v: int) -> None:
+        with self._bin_v.get_lock():
+            self._bin_v.value = bin_v
+
+    @property
+    def sensortemp_v(self) -> float:
+        with self._sensortemp_v.get_lock():
+            return self._sensortemp_v.value
+
+    @sensortemp_v.setter
+    def sensortemp_v(self, sensortemp_v: float) -> None:
+        with self._sensortemp_v.get_lock():
+            self._sensortemp_v.value = sensortemp_v
+
+    @property
+    def latitude_v(self) -> float:
+        with self._latitude_v.get_lock():
+            return self._latitude_v.value
+
+    @latitude_v.setter
+    def latitude_v(self, latitude_v: float) -> None:
+        with self._latitude_v.get_lock():
+            self._latitude_v = latitude_v
+
+    @property
+    def longitude_v(self) -> float:
+        with self._longitude_v.get_lock():
+            return self._longitude_v.value
+
+    @longitude_v.setter
+    def longitude_v(self, longitude_v: float) -> None:
+        with self._longitude_v.get_lock():
+            self._longitude_v.value = longitude_v
+
+    @property
+    def ra_v(self) -> float:
+        with self._ra_v.get_lock():
+            return self._ra_v.value
+
+    @ra_v.setter
+    def ra_v(self, ra_v: float) -> None:
+        with self._ra_v.get_lock():
+            self._ra_v.value = ra_v
+
+    @property
+    def dec_v(self) -> float:
+        with self._dec_v.get_lock():
+            return self._dec_v.value
+
+    @dec_v.setter
+    def dec_v(self, dec_v: float) -> None:
+        with self._dec_v.get_lock():
+            self._dec_v.value = dec_v
 
     @property
     def count(self):
@@ -245,7 +324,7 @@ class IndiAllSkyDarks(object):
 
 
     def shoot(self, exposure, sync=True, timeout=None):
-        logger.info('Taking %0.8f s exposure (gain %d)', exposure, self.gain_v.value)
+        logger.info('Taking %0.8f s exposure (gain %d)', exposure, self.gain_v)
 
         self.indiclient.setCcdExposure(exposure, sync=sync, timeout=timeout)
 
@@ -309,8 +388,8 @@ class IndiAllSkyDarks(object):
             hdulist[0].header['EXPTIME'] = float(exposure)
             hdulist[0].header['XBINNING'] = 1
             hdulist[0].header['YBINNING'] = 1
-            hdulist[0].header['GAIN'] = float(self.gain_v.value)
-            hdulist[0].header['CCD-TEMP'] = self.sensortemp_v.value
+            hdulist[0].header['GAIN'] = float(self.gain_v)
+            hdulist[0].header['CCD-TEMP'] = self.sensortemp_v
             hdulist[0].header['BITPIX'] = 16
 
             if self.config.get('CFA_PATTERN'):
@@ -561,18 +640,18 @@ class IndiAllSkyDarks(object):
             self.camera_id,
             ccd_bits,
             int(exposure),
-            self.gain_v.value,
-            self.bin_v.value,
-            int(self.sensortemp_v.value),
+            self.gain_v,
+            self.bin_v,
+            int(self.sensortemp_v),
             date_str,
         )
         bpm_filename = bpm_filename_t.format(
             self.camera_id,
             ccd_bits,
             int(exposure),
-            self.gain_v.value,
-            self.bin_v.value,
-            int(self.sensortemp_v.value),
+            self.gain_v,
+            self.bin_v,
+            int(self.sensortemp_v),
             date_str,
         )
 
@@ -630,9 +709,9 @@ class IndiAllSkyDarks(object):
             self.camera_id,
             image_bitpix,
             exposure_f,
-            self.gain_v.value,
-            self.bin_v.value,
-            self.sensortemp_v.value,
+            self.gain_v,
+            self.bin_v,
+            self.sensortemp_v,
         )
 
         self._miscDb.addDarkFrame(
@@ -640,9 +719,9 @@ class IndiAllSkyDarks(object):
             self.camera_id,
             image_bitpix,
             exposure_f,
-            self.gain_v.value,
-            self.bin_v.value,
-            self.sensortemp_v.value,
+            self.gain_v,
+            self.bin_v,
+            self.sensortemp_v,
         )
 
         tmp_fit_dir.cleanup()
@@ -695,9 +774,7 @@ class IndiAllSkyDarks(object):
 
         temp_val_f = float(temp_val)
 
-        with self.sensortemp_v.get_lock():
-            self.sensortemp_v.value = temp_val_f
-
+        self.sensortemp_v = temp_val_f
 
         return temp_val_f
 

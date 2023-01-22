@@ -60,14 +60,12 @@ class VideoWorker(Process):
 
     def __init__(
         self,
+        indi_worker,
         idx,
         config,
         error_q,
         video_q,
         upload_q,
-        latitude_v,
-        longitude_v,
-        bin_v,
     ):
         super(VideoWorker, self).__init__()
 
@@ -78,15 +76,12 @@ class VideoWorker(Process):
 
         self.config = config
 
+        self.indi_worker = indi_worker
         self._miscDb = miscDb(self.config)
 
         self.error_q = error_q
         self.video_q = video_q
         self.upload_q = upload_q
-
-        self.latitude_v = latitude_v
-        self.longitude_v = longitude_v
-        self.bin_v = bin_v
 
         self.f_lock = None
 
@@ -486,7 +481,7 @@ class VideoWorker(Process):
             startrail_video_entry = None
 
 
-        stg = StarTrailGenerator(self.config, self.bin_v, mask=self._detection_mask)
+        stg = StarTrailGenerator(self.config, self.indi_worker.bin_v, mask=self._detection_mask)
         stg.max_brightness = self.config['STARTRAILS_MAX_ADU']
         stg.mask_threshold = self.config['STARTRAILS_MASK_THOLD']
         stg.pixel_cutoff_threshold = self.config['STARTRAILS_PIXEL_THOLD']
@@ -695,8 +690,8 @@ class VideoWorker(Process):
         utcnow = datetime.utcnow()  # ephem expects UTC dates
 
         obs = ephem.Observer()
-        obs.lon = math.radians(self.longitude_v.value)
-        obs.lat = math.radians(self.latitude_v.value)
+        obs.lon = math.radians(self.indi_worker.longitude_v)
+        obs.lat = math.radians(self.indi_worker.latitude_v)
 
         sun = ephem.Sun()
 

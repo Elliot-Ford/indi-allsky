@@ -86,5 +86,3 @@ if __name__ == "__main__":
 
     action_func = getattr(iad, args.action)
     action_func()
-
-

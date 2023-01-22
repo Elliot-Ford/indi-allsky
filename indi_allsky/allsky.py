@@ -6,6 +6,7 @@ import io
 import json
 import re
 import psutil
+from typing import Union, Tuple
 import tempfile
 import subprocess
 import hashlib
@@ -98,19 +99,19 @@ class IndiAllSky(object):
 
         self.indiclient = None
 
-        self.latitude_v = Value('f', float(self.config['LOCATION_LATITUDE']))
-        self.longitude_v = Value('f', float(self.config['LOCATION_LONGITUDE']))
+        self._latitude_v = Value('f', float(self.config['LOCATION_LATITUDE']))
+        self._longitude_v = Value('f', float(self.config['LOCATION_LONGITUDE']))
 
-        self.ra_v = Value('f', 0.0)
-        self.dec_v = Value('f', 0.0)
+        self._ra_v = Value('f', 0.0)
+        self._dec_v = Value('f', 0.0)
 
-        self.exposure_v = Value('f', -1.0)
-        self.gain_v = Value('i', -1)  # value set in CCD config
-        self.bin_v = Value('i', 1)  # set 1 for sane default
-        self.sensortemp_v = Value('f', 0)
-        self.night_v = Value('i', -1)  # bogus initial value
+        self._exposure_v = Value('f', -1.0)
+        self._gain_v = Value('i', -1)  # value set in CCD config
+        self._bin_v = Value('i', 1)  # set 1 for sane default
+        self._sensortemp_v = Value('f', 0)
+        self._night_v = Value('i', -1)  # bogus initial value
         self.night = None
-        self.moonmode_v = Value('i', -1)  # bogus initial value
+        self._moonmode_v = Value('i', -1)  # bogus initial value
         self.moonmode = None
 
         self.focus_mode = self.config.get('FOCUS_MODE', False)  # focus mode takes images as fast as possible
@@ -155,6 +156,105 @@ class IndiAllSky(object):
         signal.signal(signal.SIGINT, self.sigint_handler_main)
 
 
+    @property
+    def exposure_v(self) -> float:
+        with self._exposure_v.get_lock():
+            return self._exposure_v.value
+
+    @exposure_v.setter
+    def exposure_v(self, exposure_v: float) -> None:
+        with self._exposure_v.get_lock():
+            self._exposure_v.value = exposure_v
+
+    @property
+    def latitude_v(self) -> float:
+        with self._latitude_v.get_lock():
+            return self._latitude_v.value
+
+    @latitude_v.setter
+    def latitude_v(self, latitude_v: float) -> None:
+        with self._latitude_v.get_lock():
+            self._latitude_v = latitude_v
+
+    @property
+    def longitude_v(self) -> float:
+        with self._longitude_v.get_lock():
+            return self._longitude_v.value
+
+    @longitude_v.setter
+    def longitude_v(self, longitude_v: float) -> None:
+        with self._longitude_v.get_lock():
+            self._longitude_v.value = longitude_v
+
+    @property
+    def ra_v(self) -> float:
+        with self._ra_v.get_lock():
+            return self._ra_v.value
+
+    @ra_v.setter
+    def ra_v(self, ra_v: float) -> None:
+        with self._ra_v.get_lock():
+            self._ra_v.value = ra_v
+
+    @property
+    def dec_v(self) -> float:
+        with self._dec_v.get_lock():
+            return self._dec_v.value
+
+    @dec_v.setter
+    def dec_v(self, dec_v: float) -> None:
+        with self._dec_v.get_lock():
+            self._dec_v.value = dec_v
+
+    @property
+    def gain_v(self) -> int:
+        with self._gain_v.get_lock():
+            return self._gain_v.value
+
+    @gain_v.setter
+    def gain_v(self, gain_v: int) -> None:
+        with self._gain_v.get_lock():
+            self._gain_v.value = gain_v
+
+    @property
+    def bin_v(self) -> int:
+        with self._bin_v.get_lock():
+            return self._bin_v.value
+
+    @bin_v.setter
+    def bin_v(self, bin_v: int) -> None:
+        with self._bin_v.get_lock():
+            self._bin_v.value = bin_v
+
+    @property
+    def sensortemp_v(self) -> float:
+        with self._sensortemp_v.get_lock():
+            return self._sensortemp_v.value
+
+    @sensortemp_v.setter
+    def sensortemp_v(self, sensortemp_v: float) -> None:
+        with self._sensortemp_v.get_lock():
+            self._sensortemp_v.value = sensortemp_v
+
+    @property
+    def night_v(self) -> int:
+        with self._night_v.get_lock():
+            return self._night_v.value
+
+    @night_v.setter
+    def night_v(self, night_v: int) -> None:
+        with self._night_v.get_lock():
+            self._night_v.value = night_v
+
+    @property
+    def moonmode_v(self) -> int:
+        with self._moonmode_v.get_lock():
+            return self._moonmode_v.value
+
+    @moonmode_v.setter
+    def moonmode_v(self, moonmode_v: int) -> None:
+        with self._moonmode_v.get_lock():
+            self._moonmode_v.value = moonmode_v
 
     @property
     def pid_file(self):
@@ -165,7 +265,7 @@ class IndiAllSky(object):
         self._pid_file = Path(new_pid_file)
 
 
-    def sighup_handler_main(self, signum, frame):
+    def sighup_handler_main(self, signum: int, frame) -> any:
         logger.warning('Caught HUP signal, reconfiguring')
 
 
@@ -201,11 +301,8 @@ class IndiAllSky(object):
         self.night_sun_radians = math.radians(self.config['NIGHT_SUN_ALT_DEG'])
         self.night_moonmode_radians = math.radians(self.config['NIGHT_MOONMODE_ALT_DEG'])
 
-        with self.latitude_v.get_lock():
-            self.latitude_v.value = float(self.config['LOCATION_LATITUDE'])
-
-        with self.longitude_v.get_lock():
-            self.longitude_v.value = float(self.config['LOCATION_LONGITUDE'])
+        self.latitude_v = float(self.config['LOCATION_LATITUDE'])
+        self.longitude_v = float(self.config['LOCATION_LATITUDE'])
 
 
         # reconfigure if needed
@@ -226,8 +323,8 @@ class IndiAllSky(object):
                 'SWITCHES' : {},
                 'PROPERTIES' : {
                     'GEOGRAPHIC_COORD' : {
-                        'LAT' : self.latitude_v.value,
-                        'LONG' : self.longitude_v.value,
+                        'LAT' : self.latitude_v,
+                        'LONG' : self.longitude_v,
                     },
                 },
             }
@@ -308,7 +405,7 @@ class IndiAllSky(object):
         self._reload = True
 
 
-    def sigterm_handler_main(self, signum, frame):
+    def sigterm_handler_main(self, signum: int, frame) -> any:
         logger.warning('Caught TERM signal, shutting down')
 
         # set flag for program to stop processes
@@ -316,14 +413,14 @@ class IndiAllSky(object):
         self._terminate = True
 
 
-    def sigint_handler_main(self, signum, frame):
+    def sigint_handler_main(self, signum: int, frame) -> any:
         logger.warning('Caught INT signal, shutting down')
 
         # set flag for program to stop processes
         self._shutdown = True
 
 
-    def sigalarm_handler_main(self, signum, frame):
+    def sigalarm_handler_main(self, signum: int, frame) -> any:
         raise TimeOutException()
 
 
@@ -344,7 +441,7 @@ class IndiAllSky(object):
         self._miscDb.setState('PID_FILE', self.pid_file)
 
 
-    def _parseConfig(self, json_config):
+    def _parseConfig(self, json_config: str) -> (any, hashlib.md5):
         # WARNING:  database configuration may not be ready
         c = json.loads(json_config, object_pairs_hook=OrderedDict)
 
@@ -398,7 +495,7 @@ class IndiAllSky(object):
         return c, c_md5
 
 
-    def _initialize(self, connectOnly=False):
+    def _initialize(self, connectOnly: bool = False) -> None:
         logger.info('indi-allsky release: %s', str(__version__))
         logger.info('indi-allsky config version: %s', str(__config_version__))
 
@@ -546,8 +643,8 @@ class IndiAllSky(object):
                 },
                 'PROPERTIES' : {
                     'GEOGRAPHIC_COORD' : {
-                        'LAT' : self.latitude_v.value,
-                        'LONG' : self.longitude_v.value,
+                        'LAT' : self.latitude_v,
+                        'LONG' : self.longitude_v,
                     },
                     'TELESCOPE_INFO' : {
                         'TELESCOPE_APERTURE' : 10,
@@ -632,8 +729,7 @@ class IndiAllSky(object):
         if not self.config.get('CCD_EXPOSURE_DEF'):
             self.config['CCD_EXPOSURE_DEF'] = self.config['CCD_EXPOSURE_MIN']
 
-        with self.exposure_v.get_lock():
-            self.exposure_v.value = self.config['CCD_EXPOSURE_DEF']
+        self.exposure_v = self.config['CCD_EXPOSURE_DEF']
 
         logger.info('Default CCD exposure: {0:0.8f}'.format(self.config['CCD_EXPOSURE_DEF']))
 
@@ -687,21 +783,12 @@ class IndiAllSky(object):
 
         logger.info('Starting ImageWorker process %d', self.image_worker_idx)
         self.image_worker = ImageWorker(
+            self,
             self.image_worker_idx,
             self.config,
             self.image_error_q,
             self.image_q,
-            self.upload_q,
-            self.latitude_v,
-            self.longitude_v,
-            self.ra_v,
-            self.dec_v,
-            self.exposure_v,
-            self.gain_v,
-            self.bin_v,
-            self.sensortemp_v,
-            self.night_v,
-            self.moonmode_v,
+            self.upload_q
         )
         self.image_worker.start()
 
@@ -716,7 +803,7 @@ class IndiAllSky(object):
             )
 
 
-    def _stopImageWorker(self, terminate=False):
+    def _stopImageWorker(self, terminate: bool = False) -> None:
         if not self.image_worker:
             return
 
@@ -733,7 +820,7 @@ class IndiAllSky(object):
         self.image_worker.join()
 
 
-    def _startVideoWorker(self):
+    def _startVideoWorker(self) -> None:
         if self.video_worker:
             if self.video_worker.is_alive():
                 return
@@ -751,14 +838,12 @@ class IndiAllSky(object):
 
         logger.info('Starting VideoWorker process %d', self.video_worker_idx)
         self.video_worker = VideoWorker(
+            self,
             self.video_worker_idx,
             self.config,
             self.video_error_q,
             self.video_q,
             self.upload_q,
-            self.latitude_v,
-            self.longitude_v,
-            self.bin_v,
         )
         self.video_worker.start()
 
@@ -773,7 +858,7 @@ class IndiAllSky(object):
             )
 
 
-    def _stopVideoWorker(self, terminate=False):
+    def _stopVideoWorker(self, terminate: bool = False) -> None:
         if not self.video_worker:
             return
 
@@ -790,7 +875,7 @@ class IndiAllSky(object):
         self.video_worker.join()
 
 
-    def _startFileUploadWorker(self):
+    def _startFileUploadWorker(self) -> None:
         if self.upload_worker:
             if self.upload_worker.is_alive():
                 return
@@ -827,7 +912,7 @@ class IndiAllSky(object):
             )
 
 
-    def _stopFileUploadWorker(self, terminate=False):
+    def _stopFileUploadWorker(self, terminate: bool = False) -> None:
         if not self.upload_worker:
             return
 
@@ -844,7 +929,7 @@ class IndiAllSky(object):
         self.upload_worker.join()
 
 
-    def _pre_run_tasks(self):
+    def _pre_run_tasks(self) -> None:
         # Tasks that need to be run before the main program loop
 
         self._systemHealthCheck()
@@ -860,7 +945,7 @@ class IndiAllSky(object):
             self.shoot(7.0, sync=True, timeout=20.0)
 
 
-    def periodic_reconfigure(self):
+    def periodic_reconfigure(self) -> None:
         # Tasks that need to be run periodically
         if self.periodic_reconfigure_time > time.time():
             return
@@ -885,7 +970,7 @@ class IndiAllSky(object):
                 self.indiclient.configureCcdDevice(self.config['INDI_CONFIG_DEFAULTS'])
 
 
-    def connectOnly(self):
+    def connectOnly(self) -> None:
         self._initialize(connectOnly=True)
 
         self.indiclient.disconnectServer()
@@ -894,7 +979,7 @@ class IndiAllSky(object):
 
 
 
-    def run(self):
+    def run(self) -> None:
         self.write_pid()
 
         self._expireOrphanedTasks()
@@ -933,7 +1018,7 @@ class IndiAllSky(object):
             self.detectMoonMode()
 
             ### Change between day and night
-            if self.night_v.value != int(self.night):
+            if self.night_v != int(self.night):
                 if self.generate_timelapse_flag:
                     self._flushOldTasks()  # cleanup old tasks in DB
                     self._expireData()  # cleanup old images and folders
@@ -1060,7 +1145,7 @@ class IndiAllSky(object):
 
                     waiting_for_frame = False
 
-                    logger.info('Exposure received in %0.4f s (%0.4f)', frame_elapsed, frame_elapsed - self.exposure_v.value)
+                    logger.info('Exposure received in %0.4f s (%0.4f)', frame_elapsed, frame_elapsed - self.exposure_v)
 
 
                 ##########################################################################
@@ -1116,7 +1201,7 @@ class IndiAllSky(object):
 
                     frame_start_time = now
 
-                    self.shoot(self.exposure_v.value, sync=False)
+                    self.shoot(self.exposure_v, sync=False)
                     camera_ready = False
                     waiting_for_frame = True
 
@@ -1136,30 +1221,28 @@ class IndiAllSky(object):
             logger.debug('Loop completed in %0.4f s', loop_elapsed)
 
 
-    def getSensorTemperature(self):
-        temp_val = self.indiclient.getCcdTemperature()
+    def getSensorTemperature(self) -> float:
+        temp_val: float = self.indiclient.getCcdTemperature()
 
 
         # query external temperature if camera does not return temperature
         if temp_val < -100.0 and self.config.get('CCD_TEMP_SCRIPT'):
             try:
-                ext_temp_val = self.getExternalTemperature(self.config.get('CCD_TEMP_SCRIPT'))
-                temp_val = ext_temp_val
+                ext_temp_val: float = self.getExternalTemperature(self.config.get('CCD_TEMP_SCRIPT'))
+                temp_val: float = ext_temp_val
             except TemperatureException as e:
                 logger.error('Exception querying external temperature: %s', str(e))
 
 
-        temp_val_f = float(temp_val)
+        temp_val_f: float = float(temp_val)
 
-        with self.sensortemp_v.get_lock():
-            self.sensortemp_v.value = temp_val_f
-
+        self.sensortemp_v = temp_val_f
 
         return temp_val_f
 
 
-    def getExternalTemperature(self, script_path):
-        temp_script_p = Path(script_path)
+    def getExternalTemperature(self, script_path: str) -> float:
+        temp_script_p: Path = Path(script_path)
 
         logger.info('Running external script for temperature: %s', temp_script_p)
 
@@ -1245,7 +1328,7 @@ class IndiAllSky(object):
         return temp_float
 
 
-    def getGpsPosition(self):
+    def getGpsPosition(self) -> Union[Tuple[float, float, float], None]:
         if not self.indiclient.gps_device:
             return
 
@@ -1260,21 +1343,18 @@ class IndiAllSky(object):
         #logger.info('Lat: %0.2f, Long: %0.2f', self.latitude_v.value, self.longitude_v.value)
 
         # need 1/10 degree difference before updating location
-        if abs(gps_lat - self.latitude_v.value) > 0.1:
+        if abs(gps_lat - self.latitude_v) > 0.1:
             self.updateConfigLocation(gps_lat, gps_long)
             update_position = True
-        elif abs(gps_long - self.longitude_v.value) > 0.1:
+        elif abs(gps_long - self.longitude_v) > 0.1:
             self.updateConfigLocation(gps_lat, gps_long)
             update_position = True
 
 
         if update_position:
             # Update shared values
-            with self.latitude_v.get_lock():
-                self.latitude_v.value = gps_lat
-
-            with self.longitude_v.get_lock():
-                self.longitude_v.value = gps_long
+            self.latitude_v = gps_lat
+            self.longitude_v = gps_long
 
 
             self.reparkTelescope()
@@ -1283,24 +1363,20 @@ class IndiAllSky(object):
         return gps_lat, gps_long, gps_elev
 
 
-    def getTelescopeRaDec(self):
+    def getTelescopeRaDec(self) -> Union[Tuple[float, float], None]:
         if not self.indiclient.telescope_device:
             return
 
         ra, dec = self.indiclient.getTelescopeRaDec()
 
         # Update shared values
-        with self.ra_v.get_lock():
-            self.ra_v.value = ra
-
-        with self.dec_v.get_lock():
-            self.dec_v.value = dec
-
+        self.ra_v = ra
+        self.dec_v = dec
 
         return ra, dec
 
 
-    def updateConfigLocation(self, gps_lat, gps_long):
+    def updateConfigLocation(self, gps_lat: float, gps_long: float) -> None:
         logger.warning('Updating indi-allsky config with new geographic location')
 
         with io.open(self.config_file, 'r') as f_config_file:
@@ -1324,16 +1400,16 @@ class IndiAllSky(object):
             return
 
 
-    def reparkTelescope(self):
+    def reparkTelescope(self) -> None:
         if not self.indiclient.telescope_device:
             return
 
         self.indiclient.unparkTelescope()
-        self.indiclient.setTelescopeParkPosition(0.0, self.latitude_v.value)
+        self.indiclient.setTelescopeParkPosition(0.0, self.latitude_v)
         self.indiclient.parkTelescope()
 
 
-    def cameraReport(self):
+    def cameraReport(self) -> None:
         camera_interface = getattr(camera_module, self.config.get('CAMERA_INTERFACE', 'indi'))
 
         # instantiate the client
@@ -1400,11 +1476,11 @@ class IndiAllSky(object):
 
 
 
-    def reconfigureCcd(self):
+    def reconfigureCcd(self) -> None:
 
-        if self.night_v.value != int(self.night):
+        if self.night_v != int(self.night):
             pass
-        elif self.night and bool(self.moonmode_v.value) != bool(self.moonmode):
+        elif self.night and bool(self.moonmode_v) != bool(self.moonmode):
             pass
         else:
             # No need to reconfigure
@@ -1436,18 +1512,15 @@ class IndiAllSky(object):
 
 
         # Update shared values
-        with self.night_v.get_lock():
-            self.night_v.value = int(self.night)
-
-        with self.moonmode_v.get_lock():
-            self.moonmode_v.value = int(self.moonmode)
+        self.night_v = int(self.night)
+        self.moonmode_v = int(self.moonmode)
 
 
 
-    def detectNight(self):
+    def detectNight(self) -> None:
         obs = ephem.Observer()
-        obs.lon = math.radians(self.longitude_v.value)
-        obs.lat = math.radians(self.latitude_v.value)
+        obs.lon = math.radians(self.longitude_v)
+        obs.lat = math.radians(self.latitude_v)
         obs.date = datetime.utcnow()  # ephem expects UTC dates
 
         sun = ephem.Sun()
@@ -1458,11 +1531,11 @@ class IndiAllSky(object):
         self.night = sun.alt < self.night_sun_radians  # boolean
 
 
-    def detectMoonMode(self):
+    def detectMoonMode(self) -> None:
         # detectNight() should be run first
         obs = ephem.Observer()
-        obs.lon = math.radians(self.longitude_v.value)
-        obs.lat = math.radians(self.latitude_v.value)
+        obs.lon = math.radians(self.longitude_v)
+        obs.lat = math.radians(self.latitude_v)
         obs.date = datetime.utcnow()  # ephem expects UTC dates
 
         moon = ephem.Moon()
@@ -1481,12 +1554,12 @@ class IndiAllSky(object):
         self.moonmode = False
 
 
-    def darks(self):
+    def darks(self) -> None:
         logger.error('This functionality has been moved to the darks.py script')
         sys.exit()
 
 
-    def generateDayTimelapse(self, timespec='', camera_id=0):
+    def generateDayTimelapse(self, timespec: str = '', camera_id: int = 0) -> None:
         # run from command line
         self.config['TIMELAPSE_ENABLE'] = True
 
@@ -1503,7 +1576,7 @@ class IndiAllSky(object):
         self._generateDayTimelapse(timespec, camera_id, task_state=TaskQueueState.MANUAL)
 
 
-    def _generateDayTimelapse(self, timespec, camera_id, task_state=TaskQueueState.QUEUED):
+    def _generateDayTimelapse(self, timespec: str, camera_id: int, task_state: TaskQueueState = TaskQueueState.QUEUED) -> None:
         if not self.config.get('TIMELAPSE_ENABLE', True):
             logger.warning('Timelapse creation disabled')
             return
@@ -1532,7 +1605,7 @@ class IndiAllSky(object):
         self.video_q.put({'task_id' : task.id})
 
 
-    def generateNightTimelapse(self, timespec='', camera_id=0):
+    def generateNightTimelapse(self, timespec: str = '', camera_id: int = 0) -> None:
         # run from command line
         self.config['TIMELAPSE_ENABLE'] = True
 
@@ -1545,11 +1618,10 @@ class IndiAllSky(object):
         else:
             camera_id = int(camera_id)
 
-
         self._generateNightTimelapse(timespec, camera_id, task_state=TaskQueueState.MANUAL)
 
 
-    def _generateNightTimelapse(self, timespec, camera_id, task_state=TaskQueueState.QUEUED):
+    def _generateNightTimelapse(self, timespec: str = '', camera_id: int = 0, task_state: TaskQueueState = TaskQueueState.QUEUED) -> None:
         if not self.config.get('TIMELAPSE_ENABLE', True):
             logger.warning('Timelapse creation disabled')
             return
@@ -1578,7 +1650,7 @@ class IndiAllSky(object):
         self.video_q.put({'task_id' : task.id})
 
 
-    def generateNightKeogram(self, timespec='', camera_id=0):
+    def generateNightKeogram(self, timespec: str = '', camera_id: int = 0) -> None:
         # run from command line
         self.config['TIMELAPSE_ENABLE'] = True
 
@@ -1595,7 +1667,7 @@ class IndiAllSky(object):
         self._generateNightKeogram(timespec, camera_id, task_state=TaskQueueState.MANUAL)
 
 
-    def _generateNightKeogram(self, timespec, camera_id, task_state=TaskQueueState.QUEUED):
+    def _generateNightKeogram(self, timespec: str, camera_id: int, task_state: TaskQueueState=TaskQueueState.QUEUED) -> None:
         if not self.config.get('TIMELAPSE_ENABLE', True):
             logger.warning('Timelapse creation disabled')
             return
@@ -1624,7 +1696,7 @@ class IndiAllSky(object):
         self.video_q.put({'task_id' : task.id})
 
 
-    def generateDayKeogram(self, timespec='', camera_id=0):
+    def generateDayKeogram(self, timespec: str = '', camera_id: int = 0) -> None:
         # run from command line
         self.config['TIMELAPSE_ENABLE'] = True
 
@@ -1641,7 +1713,7 @@ class IndiAllSky(object):
         self._generateDayKeogram(timespec, camera_id, task_state=TaskQueueState.MANUAL)
 
 
-    def _generateDayKeogram(self, timespec, camera_id, task_state=TaskQueueState.QUEUED):
+    def _generateDayKeogram(self, timespec: str, camera_id: int, task_state: TaskQueueState = TaskQueueState.QUEUED) -> None:
         if not self.config.get('TIMELAPSE_ENABLE', True):
             logger.warning('Timelapse creation disabled')
             return
@@ -1670,13 +1742,13 @@ class IndiAllSky(object):
         self.video_q.put({'task_id' : task.id})
 
 
-    def shoot(self, exposure, sync=True, timeout=None):
-        logger.info('Taking %0.8f s exposure (gain %d)', exposure, self.gain_v.value)
+    def shoot(self, exposure: float, sync: bool = True, timeout: Union[float, None] = None) -> None:
+        logger.info('Taking %0.8f s exposure (gain %d)', exposure, self.gain_v)
 
         self.indiclient.setCcdExposure(exposure, sync=sync, timeout=timeout)
 
 
-    def validateGpsTime(self):
+    def validateGpsTime(self) -> None:
         if not self.indiclient.gps_device:
             logger.error('No GPS device for time sync')
             return
